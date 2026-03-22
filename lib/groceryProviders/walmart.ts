@@ -9,7 +9,7 @@
 // Affiliate product search: https://developer.walmart.com/api/us/affiliate/items
 // ============================================================
 
-import { CartItem, DietaryLabel, RetailerProduct } from '../types'
+import { CartItem, DietaryLabel, ItemCategory, RetailerProduct } from '../types'
 import {
   GroceryProvider,
   InventoryResult,
@@ -116,7 +116,7 @@ export class WalmartProvider implements GroceryProvider {
       sku: String(item.itemId),
       name: String(item.name),
       brand: item.brandName ? String(item.brandName) : undefined,
-      category: String(item.categoryNode ?? 'pantry'),
+      category: String(item.categoryNode ?? 'pantry') as ItemCategory,
       price: Number(item.salePrice ?? item.msrp ?? 0),
       unit: String(item.upc ?? ''),
       imageUrl: item.thumbnailImage ? String(item.thumbnailImage) : undefined,

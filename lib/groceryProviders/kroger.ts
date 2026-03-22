@@ -9,7 +9,7 @@
 // Auth: OAuth 2.0 Client Credentials + Authorization Code
 // ============================================================
 
-import { CartItem, DietaryLabel, RetailerProduct } from '../types'
+import { CartItem, DietaryLabel, ItemCategory, RetailerProduct } from '../types'
 import {
   GroceryProvider,
   InventoryResult,
@@ -134,7 +134,7 @@ export class KrogerProvider implements GroceryProvider {
       sku: String(item.productId),
       name: String(item.description),
       brand: item.brand ? String(item.brand) : undefined,
-      category: 'pantry', // derive from item.categories
+      category: 'pantry' as ItemCategory, // derive from item.categories
       price: price?.[0]?.price?.regular ?? 0,
       imageUrl: (item.images as Array<{ url?: string }>)?.[0]?.url,
       inStock: true,
