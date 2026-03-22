@@ -5,7 +5,7 @@
 // provider selection in one place.
 // ============================================================
 
-import { CartItem, DietaryLabel, GeneratedCartResult, RetailerId } from '../types'
+import { CartItem, DietaryLabel, GeneratedCartResult, RetailerId, RetailerSku } from '../types'
 import { GroceryProvider, MappingOptions } from './types'
 import { mockProvider } from './mockProvider'
 import { walmartProvider } from './walmart'
@@ -91,7 +91,15 @@ export async function generateGroceryCart({
       .filter(m => m.matchedProduct !== null)
       .map(m => ({
         originalItem: m.originalItem,
-        retailerProduct: m.matchedProduct!,
+        retailerProduct: {
+          retailerId: m.matchedProduct!.retailerId,
+          sku: m.matchedProduct!.sku,
+          productName: m.matchedProduct!.name,
+          productUrl: m.matchedProduct!.productUrl,
+          imageUrl: m.matchedProduct!.imageUrl,
+          currentPrice: m.matchedProduct!.price,
+          inStock: m.matchedProduct!.inStock,
+        } as RetailerSku,
         quantity: m.originalItem.quantity,
         lineTotal: (m.matchedProduct!.price ?? 0) * m.originalItem.quantity,
       })),
