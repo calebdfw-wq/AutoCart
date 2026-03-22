@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+/* ─── CSS Variables ───────────────────────────────────────── */
+:root {
+  --font-syne: 'Syne', sans-serif;
+  --font-dm-sans: 'DM Sans', sans-serif;
+}
+
+/* ─── Base Reset ───────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #07080C;
+  color: #F9FAFB;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* ─── Custom Scrollbar ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+/* ─── Typography ───────────────────────────────────────────── */
+.font-display { font-family: var(--font-syne); }
+
+/* ─── Background Effects ───────────────────────────────────── */
+.mesh-bg {
+  background-image:
+    radial-gradient(ellipse 100% 70% at 50% -10%, rgba(74,222,128,0.09) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 60% at 85% 90%, rgba(249,115,22,0.05) 0%, transparent 60%);
+}
+
+.mesh-bg-subtle {
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -15%, rgba(74,222,128,0.05) 0%, transparent 70%);
+}
+
+/* ─── Glass Morphism ───────────────────────────────────────── */
+.glass {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.glass-dark {
+  background: rgba(7,8,12,0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+/* ─── Gradient Text ────────────────────────────────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, #4ade80 10%, #22c55e 50%, #fb923c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-white {
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.7) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Glow Effects ─────────────────────────────────────────── */
+.glow-border-green {
+  box-shadow: 0 0 0 1px rgba(74,222,128,0.2), 0 0 20px rgba(74,222,128,0.08);
+}
+
+.glow-border-green:hover {
+  box-shadow: 0 0 0 1px rgba(74,222,128,0.35), 0 0 30px rgba(74,222,128,0.12);
+}
+
+/* ─── Card Styles ──────────────────────────────────────────── */
+.card-hover {
+  transition: transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(74,222,128,0.2) !important;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(74,222,128,0.1);
+}
+
+/* ─── Shimmer Loading Skeleton ─────────────────────────────── */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03) 25%,
+    rgba(255,255,255,0.07) 50%,
+    rgba(255,255,255,0.03) 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* ─── Stagger Animations ───────────────────────────────────── */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 80ms; }
+.stagger > *:nth-child(3) { animation-delay: 160ms; }
+.stagger > *:nth-child(4) { animation-delay: 240ms; }
+.stagger > *:nth-child(5) { animation-delay: 320ms; }
+.stagger > *:nth-child(6) { animation-delay: 400ms; }
+.stagger > *:nth-child(7) { animation-delay: 480ms; }
+.stagger > *:nth-child(8) { animation-delay: 560ms; }
+
+/* ─── iOS Safe Area / Bottom Nav Spacing ──────────────────── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe-or-2 {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+}
+@supports not (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe-or-2 { padding-bottom: 0.5rem; }
+}
+
+/* ─── Number Input Hide Spinners ───────────────────────────── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
+
+/* ─── Line Clamp Utilities ─────────────────────────────────── */
+.line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+.line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+
+/* ─── Focus Styles ─────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid rgba(74,222,128,0.5);
+  outline-offset: 2px;
+}
+
+/* ─── Selection ────────────────────────────────────────────── */
+::selection {
+  background: rgba(74,222,128,0.25);
+  color: #fff;
+}
+
+/* ─── Noise Grain Overlay ──────────────────────────────────── */
+@layer utilities {
+  .noise {
+    position: relative;
+  }
+  .noise::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    border-radius: inherit;
+  }
+}
