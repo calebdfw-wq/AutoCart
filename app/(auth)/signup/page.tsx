@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, Lock, User, Eye, EyeOff, Zap, ShoppingBag } from 'lucide-react'
@@ -29,7 +29,7 @@ const USER_TYPES: UserTypeOption[] = [
   },
 ]
 
-export default function SignUpPage() {
+function SignUpForm() {
   const searchParams = useSearchParams()
   const defaultType = searchParams.get('type') === 'creator' ? 'creator' : 'user'
 
@@ -81,7 +81,6 @@ export default function SignUpPage() {
           <p className="text-sm text-zinc-500">Join AutoCart — free forever for shoppers</p>
         </div>
 
-        {/* Account type selector */}
         <div className="mb-5">
           <label className="block text-sm font-medium text-zinc-300 mb-2">I want to…</label>
           <div className="grid grid-cols-2 gap-2">
@@ -106,39 +105,9 @@ export default function SignUpPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3.5">
-          <Input
-            label="Display Name"
-            placeholder="Marco Ramirez"
-            value={displayName}
-            onChange={e => setDisplayName(e.target.value)}
-            leftIcon={<User size={15} />}
-            required
-            autoComplete="name"
-          />
-
-          <Input
-            label="Username"
-            placeholder="macromaster"
-            value={username}
-            onChange={e => handleUsernameChange(e.target.value.toLowerCase())}
-            error={usernameError}
-            hint="Only lowercase letters, numbers, underscores"
-            leftIcon={<span className="text-zinc-600 text-sm font-medium">@</span>}
-            required
-            autoComplete="username"
-          />
-
-          <Input
-            label="Email"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            leftIcon={<Mail size={15} />}
-            required
-            autoComplete="email"
-          />
-
+          <Input label="Display Name" placeholder="Marco Ramirez" value={displayName} onChange={e => setDisplayName(e.target.value)} leftIcon={<User size={15} />} required autoComplete="name" />
+          <Input label="Username" placeholder="macromaster" value={username} onChange={e => handleUsernameChange(e.target.value.toLowerCase())} error={usernameError} hint="Only lowercase letters, numbers, underscores" leftIcon={<span className="text-zinc-600 text-sm font-medium">@</span>} required autoComplete="username" />
+          <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} leftIcon={<Mail size={15} />} required autoComplete="email" />
           <Input
             label="Password"
             type={showPassword ? 'text' : 'password'}
@@ -155,19 +124,22 @@ export default function SignUpPage() {
             minLength={8}
             autoComplete="new-password"
           />
-
-          <Button type="submit" fullWidth size="lg" loading={loading} className="mt-2">
-            Create Account
-          </Button>
+          <Button type="submit" fullWidth size="lg" loading={loading} className="mt-2">Create Account</Button>
         </form>
       </div>
 
       <p className="text-center text-sm text-zinc-500 mt-5">
         Already have an account?{' '}
-        <Link href="/login" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">
-          Sign in
-        </Link>
+        <Link href="/login" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">Sign in</Link>
       </p>
     </div>
+  )
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-[420px] h-96 bg-surface-800 rounded-2xl animate-pulse" />}>
+      <SignUpForm />
+    </Suspense>
   )
 }
