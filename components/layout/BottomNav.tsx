@@ -63,10 +63,10 @@ export default function BottomNav() {
         {/* Profile avatar tab */}
         {user && (
           <Link
-            href={`/profile/${user.username}`}
+            href="/account"
             className={cn(
               'flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors',
-              pathname.startsWith('/profile') ? 'text-brand-400' : 'text-zinc-500',
+              pathname === '/account' ? 'text-brand-400' : 'text-zinc-500',
             )}
           >
             <img
@@ -74,7 +74,7 @@ export default function BottomNav() {
               alt={user.displayName}
               className={cn(
                 'w-6 h-6 rounded-full ring-2 transition-all',
-                pathname.startsWith('/profile') ? 'ring-brand-400' : 'ring-white/20',
+                pathname === '/account' ? 'ring-brand-400' : 'ring-white/20',
               )}
             />
             <span className="text-[9px] font-semibold tracking-wide leading-none">

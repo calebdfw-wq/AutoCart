@@ -4,12 +4,13 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft, ArrowRight, CheckCircle, Upload, Plus, Trash2,
-  Globe, Lock, Eye, Zap, ShoppingBag, Tag, ChevronDown
+  Globe, Lock, Eye, Zap, ShoppingBag, Tag, ChevronDown, UtensilsCrossed, X
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import Button from '@/components/ui/Button'
 import Input, { Textarea, Select } from '@/components/ui/Input'
 import Toggle from '@/components/ui/Toggle'
+import InventoryCombobox from '@/components/ui/InventoryCombobox'
 import {
   CartCategory, CartVisibility, DietaryLabel, PrepGoal, CreateCartFormData, ItemCategory
 } from '@/lib/types'
@@ -22,9 +23,22 @@ import toast from 'react-hot-toast'
 const STEPS = [
   { id: 1, title: 'Basic Info', description: 'Name, description, category' },
   { id: 2, title: 'Grocery Items', description: 'Add your items' },
-  { id: 3, title: 'Dietary Rules', description: 'Labels and substitutions' },
-  { id: 4, title: 'Review', description: 'Review and publish' },
+  { id: 3, title: 'Meal Plan', description: 'Meals and instructions' },
+  { id: 4, title: 'Dietary Rules', description: 'Labels and substitutions' },
+  { id: 5, title: 'Review', description: 'Review and publish' },
 ]
+
+const MEAL_LABELS = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Pre-Workout', 'Post-Workout', 'Meal Prep Bowl', 'Custom']
+const MEAL_EMOJIS = ['🍳', '🥗', '🍗', '🥩', '🍚', '🥣', '🥙', '🌮', '🍜', '🥘', '🍱', '🫕']
+
+interface CreateMeal {
+  id: string
+  label: string
+  emoji: string
+  description: string
+  ingredients: string[]
+  instructions: string[]
+}
 
 const CATEGORY_OPTIONS: CartCategory[] = ['meal-prep', 'bulking', 'cutting', 'family', 'budget', 'athlete', 'vegan', 'keto', 'quick-prep', 'college', 'gourmet']
 const ITEM_CATEGORIES: ItemCategory[] = ['protein', 'produce', 'grains', 'dairy', 'pantry', 'frozen', 'beverages', 'snacks', 'condiments', 'supplements', 'bakery', 'deli']
@@ -62,6 +76,8 @@ export default function CreatePage() {
   const [form, setForm] = useState<CreateCartFormData>(INITIAL_FORM)
   const [tagInput, setTagInput] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [meals, setMeals] = useState<CreateMeal[]>([])
+  const [itemSearchValues, setItemSearchValues] = useState<string[]>([])
 
   const setField = <K extends keyof CreateCartFormData>(key: K, value: CreateCartFormData[K]) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -69,6 +85,7 @@ export default function CreatePage() {
 
   const addItem = () => {
     setField('items', [...form.items, { ...BLANK_ITEM }])
+    setItemSearchValues(prev => [...prev, ''])
   }
 
   const updateItem = (i: number, key: string, value: string | number) => {
@@ -78,6 +95,57 @@ export default function CreatePage() {
 
   const removeItem = (i: number) => {
     setField('items', form.items.filter((_, idx) => idx !== i))
+    setItemSearchValues(prev => prev.filter((_, idx) => idx !== i))
+  }
+
+  const addMeal = () => {
+    setMeals(prev => [...prev, {
+      id: crypto.randomUUID(),
+      label: 'Meal Prep Bowl',
+      emoji: '🥘',
+      description: '',
+      ingredients: [],
+      instructions: [''],
+    }])
+  }
+
+  const updateMeal = (id: string, key: keyof CreateMeal, value: any) => {
+    setMeals(prev => prev.map(m => m.id === id ? { ...m, [key]: value } : m))
+  }
+
+  const removeMeal = (id: string) => {
+    setMeals(prev => prev.filter(m => m.id !== id))
+  }
+
+  const toggleMealIngredient = (id: string, ingredient: string) => {
+    setMeals(prev => prev.map(m => {
+      if (m.id !== id) return m
+      return {
+        ...m,
+        ingredients: m.ingredients.includes(ingredient)
+          ? m.ingredients.filter(i => i !== ingredient)
+          : [...m.ingredients, ingredient],
+      }
+    }))
+  }
+
+  const addInstruction = (id: string) => {
+    setMeals(prev => prev.map(m => m.id === id ? { ...m, instructions: [...m.instructions, ''] } : m))
+  }
+
+  const updateInstruction = (id: string, idx: number, val: string) => {
+    setMeals(prev => prev.map(m => {
+      if (m.id !== id) return m
+      const instructions = m.instructions.map((s, i) => i === idx ? val : s)
+      return { ...m, instructions }
+    }))
+  }
+
+  const removeInstruction = (id: string, idx: number) => {
+    setMeals(prev => prev.map(m => {
+      if (m.id !== id) return m
+      return { ...m, instructions: m.instructions.filter((_, i) => i !== idx) }
+    }))
   }
 
   const toggleDietary = (label: DietaryLabel) => {
@@ -104,6 +172,8 @@ export default function CreatePage() {
     if (step === 2) return form.items.length >= 1 && form.items.every(i => i.name.trim())
     return true
   }
+
+  const itemNames = form.items.map(i => i.name).filter(Boolean)
 
   const handlePublish = async () => {
     setSubmitting(true)
@@ -288,10 +358,23 @@ export default function CreatePage() {
                       </button>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                      <Input
-                        placeholder="Item name *"
-                        value={item.name}
-                        onChange={e => updateItem(i, 'name', e.target.value)}
+                      <InventoryCombobox
+                        value={itemSearchValues[i] ?? item.name}
+                        onChange={val => {
+                          const newSearchValues = [...itemSearchValues]
+                          newSearchValues[i] = val
+                          setItemSearchValues(newSearchValues)
+                          updateItem(i, 'name', val)
+                        }}
+                        onSelect={(name, price, unit, category) => {
+                          updateItem(i, 'name', name)
+                          updateItem(i, 'estimatedPrice', price)
+                          updateItem(i, 'unit', unit)
+                          updateItem(i, 'category', category)
+                          const newSearchValues = [...itemSearchValues]
+                          newSearchValues[i] = name
+                          setItemSearchValues(newSearchValues)
+                        }}
                         containerClassName="col-span-2"
                       />
                       <Input
@@ -351,8 +434,148 @@ export default function CreatePage() {
           </div>
         )}
 
-        {/* ── Step 3: Dietary ───────────────────────────────── */}
+        {/* ── Step 3: Meal Plan ─────────────────────────────── */}
         {step === 3 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-display font-bold text-lg text-white">Meal Plan</h2>
+                <p className="text-sm text-zinc-500 mt-0.5">Add meals with instructions (optional)</p>
+              </div>
+              <Button size="sm" variant="secondary" icon={<Plus size={14} />} onClick={addMeal}>
+                Add Meal
+              </Button>
+            </div>
+
+            {meals.length === 0 ? (
+              <div className="py-10 text-center rounded-xl border border-dashed border-white/10">
+                <UtensilsCrossed size={32} className="text-zinc-600 mx-auto mb-3" />
+                <p className="text-white font-medium mb-1">No meals yet</p>
+                <p className="text-sm text-zinc-500 mb-4">Add meals with step-by-step cooking instructions</p>
+                <Button size="sm" icon={<Plus size={14} />} onClick={addMeal}>Add First Meal</Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {meals.map(meal => (
+                  <div key={meal.id} className="p-4 rounded-xl bg-surface-700/50 border border-white/8 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
+                        {/* Emoji picker */}
+                        <div className="flex flex-wrap gap-1 mb-1">
+                          {MEAL_EMOJIS.map(e => (
+                            <button
+                              key={e}
+                              type="button"
+                              onClick={() => updateMeal(meal.id, 'emoji', e)}
+                              className={cn(
+                                'text-lg p-1 rounded-lg transition-all',
+                                meal.emoji === e ? 'bg-brand-500/20 ring-1 ring-brand-500/40' : 'hover:bg-white/5',
+                              )}
+                            >{e}</button>
+                          ))}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeMeal(meal.id)}
+                        className="p-1 text-zinc-600 hover:text-red-400 transition-colors rounded shrink-0"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+
+                    {/* Label selector */}
+                    <div>
+                      <label className="block text-xs font-medium text-zinc-500 mb-1.5">Meal Type</label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {MEAL_LABELS.map(lbl => (
+                          <button
+                            key={lbl}
+                            type="button"
+                            onClick={() => updateMeal(meal.id, 'label', lbl)}
+                            className={cn(
+                              'text-xs px-2.5 py-1 rounded-full border transition-all font-medium',
+                              meal.label === lbl
+                                ? 'bg-brand-500/20 border-brand-500/30 text-brand-300'
+                                : 'border-white/10 text-zinc-500 hover:border-white/20 hover:text-zinc-300',
+                            )}
+                          >{lbl}</button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <Input
+                      placeholder={`${meal.emoji} ${meal.label} description (optional)`}
+                      value={meal.description}
+                      onChange={e => updateMeal(meal.id, 'description', e.target.value)}
+                    />
+
+                    {/* Ingredients from items */}
+                    {itemNames.length > 0 && (
+                      <div>
+                        <label className="block text-xs font-medium text-zinc-500 mb-1.5">Ingredients (from your items)</label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {itemNames.map(name => (
+                            <button
+                              key={name}
+                              type="button"
+                              onClick={() => toggleMealIngredient(meal.id, name)}
+                              className={cn(
+                                'text-xs px-2.5 py-1 rounded-full border transition-all',
+                                meal.ingredients.includes(name)
+                                  ? 'bg-brand-500/20 border-brand-500/30 text-brand-300'
+                                  : 'border-white/10 text-zinc-500 hover:border-white/20',
+                              )}
+                            >{name}</button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step-by-step instructions */}
+                    <div>
+                      <label className="block text-xs font-medium text-zinc-500 mb-1.5">Step-by-step Instructions</label>
+                      <div className="space-y-2">
+                        {meal.instructions.map((step, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full bg-brand-500/20 text-brand-400 text-[10px] font-bold flex items-center justify-center shrink-0">{idx + 1}</span>
+                            <input
+                              type="text"
+                              value={step}
+                              onChange={e => updateInstruction(meal.id, idx, e.target.value)}
+                              placeholder={`Step ${idx + 1}…`}
+                              className="flex-1 h-9 px-3 bg-surface-800 border border-white/10 rounded-lg text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-brand-500/50 transition-colors"
+                            />
+                            {meal.instructions.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeInstruction(meal.id, idx)}
+                                className="p-1 text-zinc-600 hover:text-red-400 transition-colors rounded"
+                              >
+                                <X size={13} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => addInstruction(meal.id)}
+                          className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors mt-1"
+                        >
+                          <Plus size={12} /> Add step
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Step 4: Dietary ───────────────────────────────── */}
+        {step === 4 && (
           <div className="space-y-5">
             <h2 className="font-display font-bold text-lg text-white">Dietary Labels & Substitutions</h2>
             <p className="text-sm text-zinc-500">Help people discover your cart and set up automatic substitution rules.</p>
@@ -421,8 +644,8 @@ export default function CreatePage() {
           </div>
         )}
 
-        {/* ── Step 4: Review ────────────────────────────────── */}
-        {step === 4 && (
+        {/* ── Step 5: Review ────────────────────────────────── */}
+        {step === 5 && (
           <div className="space-y-5">
             <h2 className="font-display font-bold text-lg text-white">Review & Publish</h2>
 
@@ -500,7 +723,7 @@ export default function CreatePage() {
           {step === 1 ? 'Cancel' : 'Back'}
         </Button>
 
-        {step < 4 ? (
+        {step < 5 ? (
           <Button
             size="md"
             icon={<ArrowRight size={16} />}
