@@ -815,9 +815,7 @@ export function matchInventoryItem(name: string): InventoryItem | null {
   return contains ?? null
 }
 
-export const INVENTORY_CATEGORIES = [
-  ...new Set(GROCERY_INVENTORY.map(i => i.category))
-]
+export const INVENTORY_CATEGORIES = Array.from(new Set(GROCERY_INVENTORY.map(i => i.category)))
 
 export function getTotalInventoryValue(): number {
   return GROCERY_INVENTORY.reduce((sum, item) => sum + item.price, 0)
